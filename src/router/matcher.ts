@@ -7,10 +7,15 @@ class Matcher {
         request: IncomingMessage,
         route: Route
     ): boolean {
+
+        const url = new URL(
+            request.url ?? '', 
+            `http://${request.headers.host}`
+        )
         
         return (
             request.method === route.method &&
-            request.url === route.path
+            url.pathname === route.path
         );
     }
 

@@ -12,7 +12,7 @@ class Server {
     constructor() {
         this.env = new EnvConfig();
         this.database = new Database(this.env);
-        this.app = new App(this.env.apiPort);
+        this.app = new App(this.env.apiPort, this.database);
     }
 
     public async start(): Promise<void> {

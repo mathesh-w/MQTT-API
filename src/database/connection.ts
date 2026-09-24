@@ -1,4 +1,4 @@
-import { MongoClient, Db } from "mongodb";
+import { MongoClient, Db, Collection } from "mongodb";
 import EnvConfig from "../config/env.js";
 
 export default class Database {
@@ -26,6 +26,10 @@ export default class Database {
         }
 
         return this.db;
+    }
+
+    public setCollection(collection: string): Collection {
+        return this.db.collection(collection);
     }
 }
 

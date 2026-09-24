@@ -1,7 +1,9 @@
 import type { IncomingMessage, ServerResponse, Server } from "http";
 import http from 'node:http';
 import Router from "./router/router.js";
-import ReadingApi from "./apis/reading.js";
+import ReadingApi from "./apis/reading/reading.js";
+import Database from "./database/connection.js";
+import ReadingRoutes from "./apis/reading/reading.routes.js";
 
 class App {
 
@@ -9,19 +11,25 @@ class App {
     private readonly router: Router;
 
     private readonly readingApi: ReadingApi;
+    private readonly readingRoutes: ReadingRoutes;
 
-    constructor(private readonly port: number){
+    constructor(
+        private readonly port: number,
+        private readonly db: Database,
+    ){
 
         this.router = new Router();
-        this.readingApi = new ReadingApi();
+        this.readingApi = new ReadingApi(this.db);
+        this.readingRoutes = new ReadingRoutes(this.router, this.readingApi);
 
         this.configurRoutes();
-
+        
         this.server = http.createServer(
             (req: IncomingMessage, res: ServerResponse) => {
                 this.requestHandler(req, res)
             }
         )
+        
         
     }
 
@@ -42,10 +50,9 @@ class App {
             }
         )
 
-        this.router.get(
-            '/readings',
-            this.readingApi.getReadings.bind(this.readingApi)
-        );
+        this.readingRoutes.configure()
+
+        
     }
 
     private requestHandler(
