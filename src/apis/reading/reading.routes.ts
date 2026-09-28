@@ -15,6 +15,10 @@ class ReadingRoutes {
             '/reading-list', 
             this.readingApi.getReadings.bind(this.readingApi)
         );
+        this.router.post(
+            '/reading-list', 
+            this.readingApi.getReadings.bind(this.readingApi)
+        );
         this.router.get(
             '/stats', 
             this.readingApi.getStats.bind(this.readingApi)
@@ -24,9 +28,18 @@ class ReadingRoutes {
             this.readingApi.deleteReading.bind(this.readingApi)
         );
         this.router.post(
-            '/creating-reading', 
-            this.readingApi.creatingReading.bind(this.readingApi)
+            '/create-reading', 
+            this.readingApi.createReading.bind(this.readingApi)
         );
+        this.router.post(
+            '/update-reading', 
+            this.readingApi.updateReading.bind(this.readingApi)
+        );
+        this.router.post(
+            '/get-latest-reading', 
+            this.readingApi.getLatestReading.bind(this.readingApi)
+        );
+
 
     }
 }

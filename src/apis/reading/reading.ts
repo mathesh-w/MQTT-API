@@ -3,8 +3,9 @@ import Database from "../../database/connection.js";
 import Input from "../../services/Input.js";
 import ResponseBuilder from "../../services/responseBulider.service.js";
 import type { ApiResponse } from "../../types/response.type.js";
-import { timeStamp } from "console";
+import DebugClass from "../../decorators/logger.decorator.js";
 
+@DebugClass
 class ReadingApi {
   private readonly builder: ResponseBuilder;
 
@@ -248,11 +249,10 @@ class ReadingApi {
       const deleteId = postVal.deleteId ?? null;
       const date = postVal.date ?? null;
 
-
       if (!deleteId && !date) {
         return this.builder.sendJson(res, 422, {
           status: false,
-          message: "Delete ID or date is required!",
+          message: "Delete ID & date is required!",
           data: null,
         });
       }
@@ -260,17 +260,15 @@ class ReadingApi {
       const start = new Date(`${date}T00:00:00.000+05:30`);
       const end = new Date(`${date}T23:59:59.999+05:30`);
 
-      const deleteResult = await this.db
-        .setCollection("readings")
-        .deleteMany({
-          sensorId: deleteId,
-          timestamp: {
-            $gte: start,
-            $lte: end,
-          },
-        });
+      const deleteResult = await this.db.setCollection("readings").deleteMany({
+        sensorId: deleteId,
+        timestamp: {
+          $gte: start,
+          $lte: end,
+        },
+      });
 
-      return this.builder.sendJson(res, 204, {
+      this.builder.sendJson(res, 200, {
         status: true,
         message: "Readings deleted successfully!",
         data: {
@@ -279,7 +277,6 @@ class ReadingApi {
           deletedCount: deleteResult.deletedCount,
         },
       });
-
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Something went woring!";
@@ -293,7 +290,7 @@ class ReadingApi {
     }
   }
 
-  public async creatingReading(req: IncomingMessage, res: ServerResponse) {
+  public async createReading(req: IncomingMessage, res: ServerResponse) {
     let data: ApiResponse;
     try {
       const input = new Input(req);
@@ -303,7 +300,6 @@ class ReadingApi {
       const sensorType = postVal.sensorType ?? null;
       const value = postVal.value ?? null;
       const date = new Date();
-
 
       if (!sensorId) {
         return this.builder.sendJson(res, 422, {
@@ -329,31 +325,155 @@ class ReadingApi {
         });
       }
 
-      const createdResult = await this.db.setCollection('reading')
-        .insertOne({sensorId, sensorType, value, timestamp: new Date()})
+      const createdResult = await this.db
+        .setCollection("reading")
+        .insertOne({ sensorId, sensorType, value, timestamp: new Date() });
 
       return this.builder.sendJson(res, 201, {
         status: true,
         message: "Reading created successfully!",
         data: {
-          sensorId , value, timestamp: new Date(),
+          sensorId,
+          value,
+          timestamp: new Date(),
           insertedId: createdResult.insertedId,
         },
-      });  
-      
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Something went woring!";
-        data = {
+      });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Something went woring!";
+      data = {
+        status: false,
+        message: message,
+        data: null,
+      };
+    }
+
+    this.builder.sendJson(res, 500, data);
+  }
+
+  public async updateReading(req: IncomingMessage, res: ServerResponse) {
+    let data: ApiResponse;
+    try {
+      const input = new Input(req);
+      const body = await input.post();
+      const postVal = body ? JSON.parse(body) : {};
+      const sensorId = postVal.sensorId ?? null;
+      const value = postVal.value ?? null;
+      const date = postVal.date ?? null;
+
+      if (!sensorId) {
+        return this.builder.sendJson(res, 422, {
           status: false,
-          message: message,
+          message: "Sensor ID is required!",
           data: null,
-        };
+        });
       }
 
-      this.builder.sendJson(res, 500, data);
-    } 
+      if (!value) {
+        return this.builder.sendJson(res, 422, {
+          status: false,
+          message: "Value is required!",
+          data: null,
+        });
+      }
 
+      const start = new Date(`${date}T00:00:00.000+05:30`);
+      const end = new Date(`${date}T23:59:59.999+05:30`);
+
+      const updateResult = await this.db
+        .setCollection("readings")
+        .updateMany(
+          { timestamp: { $gte: start, $lt: end }, sensorId },
+          {$set: { value }},
+        );
+
+
+      return this.builder.sendJson(res, 201, {
+        status: true,
+        message: "Reading created successfully!",
+        data: {
+          sensorId,
+          value,
+          modifiedCount: updateResult.modifiedCount,
+        },
+      });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Something went woring!";
+      data = {
+        status: false,
+        message: message,
+        data: null,
+      };
+    }
+
+    this.builder.sendJson(res, 500, data);
+  }
+
+  public async getLatestReading(req: IncomingMessage, res: ServerResponse) {
+    let data: ApiResponse;
+    try {
+      const input = new Input(req);
+      const getVal = input.get().searchParams;
+
+      const body = await input.post();
+      const postVal = body ? JSON.parse(body) : {};
+
+      const limit = postVal.limit ?? getVal.get("limit") ?? 10;
+      const sensorType = postVal.sensorType ?? getVal.get("sensorType");
+      const sensorId = postVal.sensorId ?? getVal.get("sensorId");
+
+      if (!sensorId) {
+        return this.builder.sendJson(res, 422, {
+          status: false,
+          message: "Sensor ID is required!",
+          data: null,
+        });
+      }
+
+      const match: any = {};
+      
+      if (sensorId) {
+        match.sensorId = sensorId;
+      } else if (sensorType) {
+        match.sensorType = sensorType;
+      } else if (limit) {
+        match.limit = limit;
+      }
+
+
+      const latestReadings = await this.db.setCollection("readings").aggregate([
+        {
+          $match: match,
+        },
+        {
+          $limit: limit,
+        },
+      ]).toArray();
+
+      // console.log('test: ', updateResult)
+
+      return this.builder.sendJson(res, 201, {
+        status: true,
+        message: "Reading created successfully!",
+        data: {
+          latestReadings,
+        },
+      });
+
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Something went woring!";
+      data = {
+        status: false,
+        message: message,
+        data: null,
+      };
+    }
+
+    this.builder.sendJson(res, 500, data);
+  }
 }
 
 export default ReadingApi;
