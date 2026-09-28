@@ -317,7 +317,7 @@ class ReadingApi {
         });
       }
 
-      if (!value) {
+      if (value === null || typeof value !== "number") {
         return this.builder.sendJson(res, 422, {
           status: false,
           message: "Value is required!",
@@ -326,7 +326,7 @@ class ReadingApi {
       }
 
       const createdResult = await this.db
-        .setCollection("reading")
+        .setCollection("readings")
         .insertOne({ sensorId, sensorType, value, timestamp: new Date() });
 
       return this.builder.sendJson(res, 201, {
@@ -438,14 +438,17 @@ class ReadingApi {
         match.sensorId = sensorId;
       } else if (sensorType) {
         match.sensorType = sensorType;
-      } else if (limit) {
-        match.limit = limit;
-      }
+      } 
 
 
       const latestReadings = await this.db.setCollection("readings").aggregate([
         {
           $match: match,
+        },
+        {
+          $sort: {
+            timestamp: -1
+          }
         },
         {
           $limit: limit,

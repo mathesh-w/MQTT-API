@@ -4,6 +4,8 @@ import Router from "./router/router.js";
 import ReadingApi from "./apis/reading/reading.js";
 import Database from "./database/connection.js";
 import ReadingRoutes from "./apis/reading/reading.routes.js";
+import Health from "./apis/health/health.js";
+import HealthRoutes from "./apis/health/health.routes.js";
 
 class App {
 
@@ -13,14 +15,21 @@ class App {
     private readonly readingApi: ReadingApi;
     private readonly readingRoutes: ReadingRoutes;
 
+    private readonly health: Health;
+    private readonly healthRoutes: HealthRoutes;
+
     constructor(
         private readonly port: number,
         private readonly db: Database,
     ){
 
         this.router = new Router();
+
         this.readingApi = new ReadingApi(this.db);
         this.readingRoutes = new ReadingRoutes(this.router, this.readingApi);
+
+        this.health = new Health(this.db);
+        this.healthRoutes = new HealthRoutes(this.router, this.health)
 
         this.configurRoutes();
         
@@ -50,7 +59,8 @@ class App {
             }
         )
 
-        this.readingRoutes.configure()
+        this.readingRoutes.configure();
+        this.healthRoutes.configure();
 
         
     }

@@ -30,7 +30,8 @@ function DebugClass(target: any) {
         const end = Date.now();
 
        console.log(
-        'Method called:', methodName,
+        'Controller: ', target.name,
+        '| Method called:', methodName,
         '| Arguments count:', args.length,
         '| Time taken:', end - start, 'ms'
         );
