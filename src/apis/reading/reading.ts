@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "http";
 import Database from "../../database/connection.js";
-import Input from "../../services/Input.js";
+import Input from "../../services/Input.service.js";
 import ResponseBuilder from "../../services/responseBulider.service.js";
 import type { ApiResponse } from "../../types/response.type.js";
 import DebugClass from "../../decorators/logger.decorator.js";
@@ -302,7 +302,7 @@ class ReadingApi {
       const date = new Date();
 
       if (!sensorId) {
-        return this.builder.sendJson(res, 422, {
+        this.builder.sendJson(res, 422, {
           status: false,
           message: "Sensor ID is required!",
           data: null,
@@ -310,7 +310,7 @@ class ReadingApi {
       }
 
       if (!sensorType) {
-        return this.builder.sendJson(res, 422, {
+        this.builder.sendJson(res, 422, {
           status: false,
           message: "Sensor ID is required!",
           data: null,
@@ -318,7 +318,7 @@ class ReadingApi {
       }
 
       if (value === null || typeof value !== "number") {
-        return this.builder.sendJson(res, 422, {
+        this.builder.sendJson(res, 422, {
           status: false,
           message: "Value is required!",
           data: null,
