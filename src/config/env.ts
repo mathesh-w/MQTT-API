@@ -15,5 +15,13 @@ export default class EnvConfig {
     public get apiPort(): number {
         return Number(process.env.API_PORT);
     }
+
+    public get jwtExpiresIn(): number {
+        return Number(process.env.JWT_EXPIRE_IN);
+    }
+
+    public get jwtSecret(): number {
+        return Number(process.env.JWT_SCERET);
+    }
 }
 

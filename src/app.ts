@@ -6,6 +6,8 @@ import Database from "./database/connection.js";
 import ReadingRoutes from "./apis/reading/reading.routes.js";
 import Health from "./apis/health/health.js";
 import HealthRoutes from "./apis/health/health.routes.js";
+import Auth from "./apis/auth/auth.js";
+import AuthRoutes from "./apis/auth/auth.routes.js";
 
 class App {
 
@@ -17,6 +19,9 @@ class App {
 
     private readonly health: Health;
     private readonly healthRoutes: HealthRoutes;
+
+    private readonly auth: Auth;
+    private readonly authRoutes: AuthRoutes;
 
     constructor(
         private readonly port: number,
@@ -30,6 +35,9 @@ class App {
 
         this.health = new Health(this.db);
         this.healthRoutes = new HealthRoutes(this.router, this.health)
+
+        this.auth = new Auth(this.db);
+        this.authRoutes = new AuthRoutes(this.router, this.auth)
 
         this.configurRoutes();
         
@@ -61,6 +69,7 @@ class App {
 
         this.readingRoutes.configure();
         this.healthRoutes.configure();
+        this.authRoutes.configure();
 
         
     }
