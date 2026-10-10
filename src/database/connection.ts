@@ -1,4 +1,4 @@
-import { MongoClient, Db, Collection } from "mongodb";
+import { MongoClient, Db, Collection, ClientSession } from "mongodb";
 import EnvConfig from "../config/env.js";
 
 export default class Database {
@@ -31,5 +31,15 @@ export default class Database {
     public setCollection(collection: string): Collection {
         return this.db.collection(collection);
     }
+
+    public async transactions<T>(work: (session: ClientSession) => Promise<T>): Promise<T> {
+        const session = this.client.startSession();
+        try {
+            return await session.withTransaction(() => work(session));
+        } finally {
+            await session.endSession();
+        }
+    }
+
 }
 

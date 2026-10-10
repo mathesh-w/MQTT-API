@@ -2,7 +2,7 @@ import Router from "../../router/router.js";
 import Auth from "./auth.js";
 
 
-class HealthRoutes {
+class AuthRoutes {
 
     constructor (
         private readonly router: Router,
@@ -12,10 +12,10 @@ class HealthRoutes {
 
     public configure (): void {
         this.router.post('/create-user', this.auth.createUser.bind(this.auth));
-        // this.router.get('/db-stats', this.health.dbStats.bind(this.health));
-        // this.router.get('/db-collections', this.health.dbCollections.bind(this.health));
+        this.router.post('/login', this.auth.login.bind(this.auth));
+        this.router.post('/logout', this.auth.logout.bind(this.auth));
     }
 
 }
 
-export default HealthRoutes;
+export default AuthRoutes;

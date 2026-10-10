@@ -20,8 +20,8 @@ export default class EnvConfig {
         return Number(process.env.JWT_EXPIRE_IN);
     }
 
-    public get jwtSecret(): number {
-        return Number(process.env.JWT_SCERET);
+    public get jwtSecret(): string {
+        return process.env.JWT_SCERET!;
     }
 }
 

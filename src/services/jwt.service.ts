@@ -24,3 +24,5 @@ class JWT {
         ) as object;
     }
 }
+
+export default JWT;
