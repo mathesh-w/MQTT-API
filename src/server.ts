@@ -1,6 +1,6 @@
-import EnvConfig from './src/config/env.js';
-import Database from './src/database/connection.js';
-import App from './src/app.js';
+import EnvConfig from './config/env.js';
+import Database from './database/connection.js';
+import App from './app.js';
 
 
 class Server {
