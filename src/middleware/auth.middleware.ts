@@ -28,14 +28,6 @@ const authMiddleware: Middleware = async (req, res, next) => {
         }
 
         const verifiedToken = await jwt.verify(token);
-        if (!verifiedToken) {
-            return builder.sendJson(res, 401, {
-                status: false,
-                message: 'Invalid or expired token!',
-                data: null
-            })
-        }
-
         next();
     } catch (error) {
         return builder.sendJson(res, 401, {
